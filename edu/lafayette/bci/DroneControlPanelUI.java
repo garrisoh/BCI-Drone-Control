@@ -87,8 +87,6 @@ public class DroneControlPanelUI implements WindowListener {
 		bottomLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 		window.getContentPane().add(bottomLabel);
 		
-		// TODO: Info button for instructions
-		
 		window.setVisible(true);
 	}
 	

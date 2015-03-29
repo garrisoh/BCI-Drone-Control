@@ -44,7 +44,7 @@ The BCILib is divided into three packages: sigproc, devices, and utils.  Javadoc
 
 The sigproc package contains a Graph class that is responsible for storing data.  Each graph can contain a Pipeline of Algorithms.  Any points added to the graph will be pushed through each algorithm in its pipeline in the order that the algorithms were added to the pipeline.  The structure is shown below:
 
-![Block Diagram](https://github.com/garrisoh/BCI-Drone-Control/BlockDiagram.png)
+![Block Diagram](https://raw.githubusercontent.com/garrisoh/BCI-Drone-Control/master/BlockDiagram.png)
 
 To create your own Algorithms, simply subclass the Algorithm abstract class and implement the process(Point) method as described in the Javadoc.
 
