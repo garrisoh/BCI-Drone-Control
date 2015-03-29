@@ -25,17 +25,17 @@ This repo contains signal processing libraries written in Java for the developme
 7. Double-click the DroneControlPanel.jar file in the downloaded repo to launch the program.  Alternatively, you can import the project into Eclipse and run it from there.
 
 ## Controls for the Drone Control Panel:
-Toggle Takeoff/Land - Blink 5x in 2 seconds.  Slower, more rhythmic blinks work better than fast blinks.  
-Toggle Forward/Hover - Close your eyes briefly (~1-2sec) and reopen them.  The drone will not move forward until you have re-opened your eyes and will stop as soon as it detects your eyes have closed.  
-Rotate CW/CCW - Rotate your head left or right.  The center position will be initialized to your head position when the program is launched, but it can be recalibrated by pressing Shift+C within the UI window.  The further you rotate your head, the faster the drone will rotate.  
-Estop - Press any key to enable.  The drone will land and stay landed until the Estop is released by pressing a key again.
+**Toggle Takeoff/Land** - Blink 5x in 2 seconds.  Slower, more rhythmic blinks work better than fast blinks.  
+**Toggle Forward/Hover** - Close your eyes briefly (~1-2sec) and reopen them.  The drone will not move forward until you have re-opened your eyes and will stop as soon as it detects your eyes have closed.  
+**Rotate CW/CCW** - Rotate your head left or right.  The center position will be initialized to your head position when the program is launched, but it can be recalibrated by pressing Shift+C within the UI window.  The further you rotate your head, the faster the drone will rotate.  
+**Estop** - Press any key to enable.  The drone will land and stay landed until the Estop is released by pressing a key again.
 
 Note: If the connection is lost with the Emotiv, the drone will hover in place until the connection is re-established.
 
 ## How it Works:
-Takeoff/Land - This signal looks at high-amplitude muscular impulses on electrodes AF3 and AF4.  The raw data from the electrodes are high-passed at 0.5Hz to remove the DC bias, averaged to improve SNR, compared to a threshold, converted to a digital "1" at each rising edge of the threshold, and a pulse counter looks for 5 pulses in 2 seconds.  
-Forward/Hover - This signal looks at the alpha wave frequency (8-13Hz) in your EEG/brainwave data on sensors O1 and O2.  Increases in alpha waves are observed in the visual cortex of your brain when your eyes close.  To detect this signal, the raw O1 and O2 data are high-passed at 0.5Hz to remove the DC offset, averaged to improve SNR, filtered with an 8-13Hz Butterworth band-pass filter, computed as an average power over time, smoothed with a 1.5 second moving average filter, compared to a threshold, and finally converted to a "1" or "-1" value at the rising and falling edges of the pulse.  
-CW/CCW - The Emotiv headset contains a gyroscope that measures your head's rotational velocity.  Integrating this velocity over time gives a rough angular position for your head.  Recalibration clears the integrator, thereby resetting the inital position of the gyro position.  
+**Takeoff/Land** - This signal looks at high-amplitude muscular impulses on electrodes AF3 and AF4.  The raw data from the electrodes are high-passed at 0.5Hz to remove the DC bias, averaged to improve SNR, compared to a threshold, converted to a digital "1" at each rising edge of the threshold, and a pulse counter looks for 5 pulses in 2 seconds.  
+**Forward/Hover** - This signal looks at the alpha wave frequency (8-13Hz) in your EEG/brainwave data on sensors O1 and O2.  Increases in alpha waves are observed in the visual cortex of your brain when your eyes close.  To detect this signal, the raw O1 and O2 data are high-passed at 0.5Hz to remove the DC offset, averaged to improve SNR, filtered with an 8-13Hz Butterworth band-pass filter, computed as an average power over time, smoothed with a 1.5 second moving average filter, compared to a threshold, and finally converted to a "1" or "-1" value at the rising and falling edges of the pulse.  
+**CW/CCW** - The Emotiv headset contains a gyroscope that measures your head's rotational velocity.  Integrating this velocity over time gives a rough angular position for your head.  Recalibration clears the integrator, thereby resetting the inital position of the gyro position.  
 
 Note: The thresholds used for the DroneControlPanel may change from user to user.  These may need to be adjusted within the DroneControlPanel.java file.  The constants that may change are the occipital threshold and the blink threshold.  Increasing these thresholds will prevent undesired behavior, but will make the system less sensitive to your commands (or vice-versa for decreasing them).  Decreasing the moving average window size will reduce the time between eye opening/closure and the drone's response, but will make unwanted behavior more likely (opposite for increasing it).
 
