@@ -40,7 +40,7 @@ Note: If the connection is lost with the Emotiv, the drone will hover in place u
 Note: The thresholds used for the DroneControlPanel may change from user to user.  These may need to be adjusted within the DroneControlPanel.java file.  The constants that may change are the occipital threshold and the blink threshold.  Increasing these thresholds will prevent undesired behavior, but will make the system less sensitive to your commands (or vice-versa for decreasing them).  Decreasing the moving average window size will reduce the time between eye opening/closure and the drone's response, but will make unwanted behavior more likely (opposite for increasing it).
 
 ## Library Structure:
-The BCILib is divided into three packages: sigproc, devices, and utils.  Javadoc can be found for each of these packages and all of their classes in the doc folder or by clicking [here](./doc/index.html).
+The BCILib is divided into three packages: sigproc, devices, and utils.  Javadoc can be found for each of these packages and all of their classes in the doc folder or by clicking [here](http://htmlpreview.github.io/?https://github.com/garrisoh/BCI-Drone-Control/blob/master/doc/index.html).
 
 The sigproc package contains a Graph class that is responsible for storing data.  Each graph can contain a Pipeline of Algorithms.  Any points added to the graph will be pushed through each algorithm in its pipeline in the order that the algorithms were added to the pipeline.  The structure is shown below:
 
