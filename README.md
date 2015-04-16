@@ -23,6 +23,7 @@ This repo contains signal processing libraries written in Java for the developme
 `node ParrotServer.js`
 6. Prepare and power on the Emotiv headset and dongle.  Wet each electrode with saline solution, place the headset on your head according to the instructions given by Emotiv, and ensure that the sensors have good quality using the Emotiv TestBench program from the SDK.  The O1, O2, AF3, and AF4 electrodes are the most critical.
 7. Double-click the DroneControlPanel.jar file in the downloaded repo to launch the program.  Alternatively, you can import the project into Eclipse and run it from there.
+8. If desired, you can use a program such as ffplay to display a live video stream by running `ffplay tcp://192.168.1.1:5555` in a terminal.
 
 ## Controls for the Drone Control Panel:
 **Toggle Takeoff/Land** - Blink 5x in 2 seconds.  Slower, more rhythmic blinks work better than fast blinks.  
