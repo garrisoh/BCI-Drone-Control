@@ -71,6 +71,11 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 	private long prevTime = 0;
 	private long gyroPrevTime = 0;
 	
+	// Implementation testing variables
+	private static final boolean ENABLE_ALPHA = false;
+	private static final boolean ENABLE_BLINK = true;
+	private static final boolean ENABLE_GYRO = false;
+	
 	/**
 	 * Main method, launches the drone control panel application
 	 */
@@ -226,7 +231,12 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 				(hpfO1data[hpfO1data.length - 1].getY() + hpfO2data[hpfO2data.length - 1].getY()) / 2.0);
 		
 		// Add to the occipital pipeline
-		occipital.addPoint(pt);
+		if (ENABLE_ALPHA) {
+			occipital.addPoint(pt);
+		} else {
+			// Add zero point if alpha disabled for testing
+			occipital.addPoint(new Point(hpfO1data[hpfO1data.length - 1].getX(), 0.0));
+		}
 		
 		// Add AF3/4 data to high pass filters
 		hpfAF3.addPoint(new Point((currTime - prevTime) / 1000.0, e.getSensorValue("AF3")));
@@ -243,7 +253,12 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 				(hpfAF3data[hpfAF3data.length - 1].getY() + hpfAF4data[hpfAF4data.length - 1].getY() / 2.0));
 		
 		// Add to frontal pipeline
-		frontal.addPoint(pt2);
+		if (ENABLE_BLINK) {
+			frontal.addPoint(pt2);
+		} else {
+			// Add zero point if blink disabled for testing
+			frontal.addPoint(new Point(hpfAF3data[hpfAF3data.length - 1].getX(), 0.0));
+		}
 		
 		// Estop logic
 		if (estop) {
@@ -316,7 +331,12 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 		long currTime = System.currentTimeMillis();
 		
 		// Add gyro data to graph
-		gyroX.addPoint(new Point((currTime - gyroPrevTime) / 1000.0, e.getGyroValue("x")));
+		if (ENABLE_GYRO) {
+			gyroX.addPoint(new Point((currTime - gyroPrevTime) / 1000.0, e.getGyroValue("x")));
+		} else {
+			// Add zero point if disabled for testing
+			gyroX.addPoint(new Point((currTime - gyroPrevTime) / 1000.0, 0.0));
+		}
 		
 		// Get processed data
 		Point[] gyroXData = new Point[gyroX.getData().size()];
