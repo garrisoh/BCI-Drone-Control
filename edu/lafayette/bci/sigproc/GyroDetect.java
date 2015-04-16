@@ -29,7 +29,7 @@ public class GyroDetect extends Algorithm {
 	private boolean triggered = false;
 	
 	// Integrator for position mode - Integral(v(t), t, 0, inf) = x(t)
-	private double integrator = 0.0;
+	private volatile double integrator = 0.0;
 	
 	/**
 	 * Creates a new gyro detection algorithm with the given
