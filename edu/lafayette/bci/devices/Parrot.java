@@ -36,7 +36,7 @@ public class Parrot {
 	 * Causes the drone to takeoff and hover a few feet above the ground
 	 */
 	public void takeoff() {
-		p.print("takeoff");
+		p.print("takeoff\n");
 		p.flush();
 	}
 	
@@ -44,7 +44,7 @@ public class Parrot {
 	 * Causes the drone to land.
 	 */
 	public void land() {
-		p.print("land");
+		p.print("land\n");
 		p.flush();
 	}
 	
@@ -52,7 +52,7 @@ public class Parrot {
 	 * Stops all movement of the drone and makes it hover in place.
 	 */
 	public void hover() {
-		p.print("hover");
+		p.print("hover\n");
 		p.flush();
 	}
 	
@@ -62,7 +62,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void up(double speed) {
-		p.print("up " + clamp(speed, 0, 1));
+		p.print("up " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -72,7 +72,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void down(double speed) {
-		p.print("down " + clamp(speed, 0, 1));
+		p.print("down " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -82,7 +82,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void left(double speed) {
-		p.print("left " + clamp(speed, 0, 1));
+		p.print("left " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -92,7 +92,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void right(double speed) {
-		p.print("right " + clamp(speed, 0, 1));
+		p.print("right " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -102,7 +102,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void forward(double speed) {
-		p.print("forward " + clamp(speed, 0, 1));
+		p.print("forward " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -112,7 +112,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void backward(double speed) {
-		p.print("backward " + clamp(speed, 0, 1));
+		p.print("backward " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -122,7 +122,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void clockwise(double speed) {
-		p.print("clockwise " + clamp(speed, 0, 1));
+		p.print("clockwise " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	
@@ -132,7 +132,7 @@ public class Parrot {
 	 * @param speed A value between 0 and 1 with 1 as max speed.
 	 */
 	public void counterClockwise(double speed) {
-		p.print("counterClockwise " + clamp(speed, 0, 1));
+		p.print("counterClockwise " + clamp(speed, 0, 1) + "\n");
 		p.flush();
 	}
 	

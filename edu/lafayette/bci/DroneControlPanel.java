@@ -20,18 +20,25 @@ import edu.lafayette.bci.utils.*;
  * moving forward, it will stop when the eyes are closed.  The yawrate of the
  * drone can be controlled using the horizontal (x-axis) gyroscope.  The further
  * the head is displaced from its initial (centered) position, the faster the
- * drone will rotate in that direction.
+ * drone will rotate in that direction.  The gyro is automatically calibrated
+ * when the program begins and when the connection is re-established after loss
+ * (make sure the user's head is centered).  Re-calibration can be done manually
+ * by pressing Shift+C.  Pressing any key will enable the estop.  The estop can
+ * be released by pressing another key.
  *
  * @author Haley Garrison
  */
 public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogObserver {
 	
 	// Threshold constants
-	private static final double OCCIPITAL_THRES = 70.0; // Power threshold in (uV)^2
-	private static final double DRONE_SPEED = 0.2; // Constant velocity of the drone in the given direction
+	// Note: OCCIPITAL_THRES and BLINK_THRES may have to be calibrated each time the headset
+	// is placed on the user's head.  Increasing the threshold will decrease the number of
+	// false positives.  Decreasing the threshold will decrease the number of false negatives.
+	private static final double OCCIPITAL_THRES = 60.0; // Power threshold in (uV)^2
+	private static final double DRONE_SPEED = 0.1; // Constant velocity of the drone in the given direction
 	private static final double GYROX_POS_THRES = 2000.0; // Position threshold
 	private static final double GYROX_POS_MAX = 10000.0; // Max value for normalizing gyro position
-	private static final double BLINK_THRES = 65.0; // Blink detection power, in uV
+	private static final double BLINK_THRES = 125.0; // Blink detection threshold, in uV
 	private static final int BLINK_NUM_THRES = 5; // Number of blinks to trigger a detection
 	private static final double BLINK_TIME_THRES = 2.0; // Time within which blinks must occur (in secs)
 	private static final long CONNECTION_TIMEOUT = 1000; // Timeout for detecting connection loss
@@ -65,16 +72,16 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 	private boolean takeoff = false; // Indicates if the drone is flying or landed
 	private boolean moving = false; // True if the drone is moving forward, false if stopped
 	private volatile boolean estop = false; // Emergency stop
-	private volatile boolean timedout = false;
+	private volatile long timeoutTime = 0;
 	
 	// Used to calculate elapsed time
 	private long prevTime = 0;
 	private long gyroPrevTime = 0;
 	
-	// Implementation testing variables
-	private static final boolean ENABLE_ALPHA = false;
+	// Implementation testing variables - set of these to false to turn off the corresponding DOF
+	private static final boolean ENABLE_ALPHA = true;
 	private static final boolean ENABLE_BLINK = true;
-	private static final boolean ENABLE_GYRO = false;
+	private static final boolean ENABLE_GYRO = true;
 	
 	/**
 	 * Main method, launches the drone control panel application
@@ -186,7 +193,16 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 		emotiv = new Emotiv();
 		emotiv.addObserver(this);
 		wd.start();
-
+		
+		// Takeoff automatically if blinking is disabled
+		if (!ENABLE_BLINK) {
+			// Wait to allow filters to settle
+			try { Thread.sleep(5000); } catch (Exception e) {}
+			drone.takeoff();
+			takeoff = true;
+			ui.setTakeoff(takeoff);
+		}
+		
 		// Wait until window is closed
 		while (!ui.isWindowClosed()) {
 			try { Thread.sleep(250); } catch (Exception e) {}
@@ -215,6 +231,13 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 		
 		// Reset watchdog timer
 		wd.reset();
+		
+		// If timeout occurred, reset the prevTime to account for lost time
+		if (timeoutTime != 0) {
+			prevTime += currTime - timeoutTime - Emotiv.SAMPLE_RATE_IN_MS;
+			gyroPrevTime += currTime - timeoutTime - Emotiv.GYRO_SAMPLE_RATE_IN_MS;
+			timeoutTime = 0;
+		}
 		
 		// Pass data from each electrode through the HPF
 		hpfO1.addPoint(new Point((currTime - prevTime) / 1000.0, e.getSensorValue("O1")));
@@ -260,7 +283,7 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 			frontal.addPoint(new Point(hpfAF3data[hpfAF3data.length - 1].getX(), 0.0));
 		}
 		
-		// Estop logic
+		// Estop logic - send redundant commands to make sure drone lands
 		if (estop) {
 			drone.hover();
 			drone.land();
@@ -271,6 +294,8 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 			ui.setBottomLabel("Estop");
 			return;
 		}
+		
+		// No estop or connection loss -> reset label to normal value
 		ui.setBottomLabel("Takeoff/Land: Blink x5, Toggle Forward/Stop: Close Eyes, Turn: Rotate Head (Reset Shift+C)");
 		
 		// Takeoff/landing logic
@@ -360,33 +385,32 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 	}
 
 	/* (non-Javadoc)
-	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
+	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
 	 */
 	@Override
-	public void keyReleased(KeyEvent e) {
+	public void keyPressed(KeyEvent e) {
 		// Recalibrate if Shift+C is pressed
-		if (e.getModifiers() == KeyEvent.SHIFT_DOWN_MASK && e.getKeyCode() == KeyEvent.VK_C) {
+		if (e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_C) {
 			GyroDetect det = (GyroDetect)gyroX.getPipeline().getAlgorithm(0);
 			det.calibrateCenter();
-			return;
-		}
-		
-		// Implement emergency stop if any key is pressed
-		estop = !estop;
-		drone.hover();
-		drone.land();
-		moving = false;
-		takeoff = false;
-		ui.setDirection(DroneControlPanelUI.HOVER);
-		ui.setTakeoff(false);
-		
-		// Set the label appropriately
-		if (timedout) {
-			ui.setBottomLabel("Connection Lost");
-		} else if (estop) {
-			ui.setBottomLabel("Estop");
-		} else {
-			ui.setBottomLabel("Takeoff/Land: Blink x5, Toggle Forward/Stop: Close Eyes, Turn: Rotate Head\nRecalibrate Gyros: Shift+C");
+		} else if (!e.isShiftDown()) {
+			// Implement emergency stop if any key is pressed
+			estop = !estop;
+			drone.hover();
+			drone.land();
+			moving = false;
+			takeoff = false;
+			ui.setDirection(DroneControlPanelUI.HOVER);
+			ui.setTakeoff(false);
+			
+			// Set the label appropriately
+			if (timeoutTime != 0) {
+				ui.setBottomLabel("Connection Lost");
+			} else if (estop) {
+				ui.setBottomLabel("Estop");
+			} else {
+				ui.setBottomLabel("Takeoff/Land: Blink x5, Toggle Forward/Stop: Close Eyes, Turn: Rotate Head\nRecalibrate Gyros: Shift+C");
+			}
 		}
 	}
 	
@@ -395,8 +419,12 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 	 */
 	public void timeout() {
 		// Stop the drone
-		timedout = true;
+		timeoutTime = System.currentTimeMillis();
 		drone.hover();
+		
+		// Recalibrate the gyro
+		GyroDetect det = (GyroDetect)gyroX.getPipeline().getAlgorithm(0);
+		det.calibrateCenter();
 		
 		// Set the UI to hover if we are flying
 		if (takeoff)
@@ -437,10 +465,10 @@ public class DroneControlPanel implements EmotivObserver, KeyListener, WatchdogO
 	}
 
 	/* (non-Javadoc)
-	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
 	 */
 	@Override
-	public void keyPressed(KeyEvent e) {
+	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
 		
 	}
